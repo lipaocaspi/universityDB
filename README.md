@@ -5,7 +5,154 @@
 #### Creación BD
 
 ```sql
+-- -----------------------------------------------------
+-- pais
+-- -----------------------------------------------------
+/* 1FN */
+CREATE TABLE pais (
+  codigo_pais VARCHAR(10) NOT NULL,
+  nombre_pais VARCHAR(50) NOT NULL,
+  CONSTRAINT PK_pais PRIMARY KEY (codigo_pais)
+);
 
+-- -----------------------------------------------------
+-- region
+-- -----------------------------------------------------
+/* 1FN */
+CREATE TABLE region (
+  codigo_region VARCHAR(10) NOT NULL,
+  nombre_region VARCHAR(50) NOT NULL,
+  codigo_pais VARCHAR(10) NOT NULL,
+  CONSTRAINT PK_region PRIMARY KEY (codigo_region),
+  CONSTRAINT FK_region_pais
+    FOREIGN KEY (codigo_pais)
+    REFERENCES pais(codigo_pais)
+);
+
+-- -----------------------------------------------------
+-- ciudad
+-- -----------------------------------------------------
+/* 1FN */
+CREATE TABLE ciudad (
+  codigo_ciudad VARCHAR(10) NOT NULL,
+  nombre_ciudad VARCHAR(50) NOT NULL,
+  codigo_region VARCHAR(10) NOT NULL,
+  CONSTRAINT PK_ciudad PRIMARY KEY (codigo_ciudad),
+  CONSTRAINT FK_ciudad_region
+    FOREIGN KEY (codigo_region)
+    REFERENCES region(codigo_region)
+);
+
+-- -----------------------------------------------------
+-- departamento
+-- -----------------------------------------------------
+CREATE TABLE departamento (
+	codigo_departamento INT NOT NULL,
+    nombre_departamento VARCHAR(50) NOT NULL,
+    CONSTRAINT PK_departamento PRIMARY KEY (codigo_departamento)
+);
+
+-- -----------------------------------------------------
+-- direccion
+-- -----------------------------------------------------
+CREATE TABLE direccion (
+	codigo_direccion VARCHAR(5) NOT NULL,
+    linea_direccion1 VARCHAR(50) NOT NULL,
+    codigo_ciudad VARCHAR(10) NOT NULL,
+    CONSTRAINT PK_direccion PRIMARY KEY (codigo_direccion),
+    CONSTRAINT FK_direccion_ciudad 
+      FOREIGN KEY (codigo_ciudad)
+      REFERENCES ciudad(codigo_ciudad)
+);
+
+-- -----------------------------------------------------
+-- genero
+-- -----------------------------------------------------
+CREATE TABLE genero (
+	codigo_genero VARCHAR(3) NOT NULL,
+    nombre_genero VARCHAR(20) NOT NULL,
+    CONSTRAINT PK_genero PRIMARY KEY (codigo_genero)
+);
+
+-- -----------------------------------------------------
+-- tipo_telefono
+-- -----------------------------------------------------
+CREATE TABLE tipo_telefono (
+	codigo_tipo VARCHAR(5) NOT NULL,
+    nombre_tipo VARCHAR(20) NOT NULL,
+    CONSTRAINT PK_tipo_telefono PRIMARY KEY (codigo_tipo)
+);
+
+-- -----------------------------------------------------
+-- curso_escolar
+-- -----------------------------------------------------
+CREATE TABLE curso_escolar (
+	codigo_curso_escolar INT NOT NULL,
+    anyo_inicio YEAR(4) NOT NULL,
+    anyo_fin YEAR(4) NOT NULL,
+    CONSTRAINT PK_curso_escolar PRIMARY KEY (codigo_curso_escolar)
+);
+
+-- -----------------------------------------------------
+-- grado
+-- -----------------------------------------------------
+CREATE TABLE grado (
+	codigo_grado INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    CONSTRAINT PK_grado PRIMARY KEY (codigo_grado)
+);
+
+-- -----------------------------------------------------
+-- curso
+-- -----------------------------------------------------
+CREATE TABLE curso (
+	codigo_curso INT NOT NULL,
+    nombre_curso VARCHAR(50) NOT NULL,
+    CONSTRAINT PK_curso PRIMARY KEY (codigo_curso)
+);
+
+-- -----------------------------------------------------
+-- tipo_asignatura
+-- -----------------------------------------------------
+CREATE TABLE tipo_asignatura (
+	codigo_tipo VARCHAR(5) NOT NULL,
+    nombre_tipo VARCHAR(50) NOT NULL,
+    CONSTRAINT PK_tipo_asignatura PRIMARY KEY (codigo_tipo)
+);
+
+-- -----------------------------------------------------
+-- profesor
+-- -----------------------------------------------------
+CREATE TABLE profesor (
+	codigo_profesor INT NOT NULL,
+    nif VARCHAR(9),
+    nombre VARCHAR(25) NOT NULL,
+    apellido1 VARCHAR(50) NOT NULL,
+    apellido2 VARCHAR(50),
+    /* DIRECCIÓN */
+    fecha_nacimiento DATE NOT NULL,
+    codigo_genero VARCHAR(3) NOT NULL,
+    codigo_departamento INT NOT NULL,
+    CONSTRAINT PK_profesor PRIMARY KEY (codigo_profesor),
+    /* FOREIGN KEY DIRECCIÓN */
+    CONSTRAINT FK_genero_profesor
+      FOREIGN KEY (codigo_genero)
+      REFERENCES genero(codigo_genero),
+    CONSTRAINT FK_departamento_profesor
+      FOREIGN KEY (codigo_departamento)
+      REFERENCES departamento(codigo_departamento)
+);
+
+--------------------------------------------------------------------------------------------
+
+-- -----------------------------------------------------
+-- telefono
+-- -----------------------------------------------------
+CREATE TABLE telefono (
+	codigo_telefono VARCHAR(5) NOT NULL,
+    numero_telefono VARCHAR(9) NOT NULL,
+    CONSTRAINT PK_telefono PRIMARY KEY (codigo_telefono)
+);
 ```
 
 #### Inserción de datos
