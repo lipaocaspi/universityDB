@@ -148,7 +148,7 @@ CREATE TABLE profesor (
 -- -----------------------------------------------------
 CREATE TABLE asignatura (
 	codigo_asignatura INT NOT NULL,
-    nonbre_asignatura VARCHAR(100) NOT NULL,
+    nombre_asignatura VARCHAR(100) NOT NULL,
     creditos_asignatura FLOAT NOT NULL,
     codigo_tipo_asignatura VARCHAR(5) NOT NULL,
     codigo_curso VARCHAR(10) NOT NULL,
@@ -409,7 +409,7 @@ VALUES
     (22, '98816696W', 'Juan', 'Guerrero', 'Martínez', '1980/11/21', 'HOM', 1),
     (23, '77194445M', 'María', 'Domínguez', 'Hernández', '1980/12/13', 'MUJ', 2);
 
-INSERT INTO asignatura (codigo_asignatura, nonbre_asignatura, creditos_asignatura, codigo_tipo_asignatura, codigo_curso, cuatrimestre_asignatura, codigo_profesor, codigo_grado)
+INSERT INTO asignatura (codigo_asignatura, nombre_asignatura, creditos_asignatura, codigo_tipo_asignatura, codigo_curso, cuatrimestre_asignatura, codigo_profesor, codigo_grado)
 VALUES 
     (1, 'Álgegra lineal y matemática discreta', 6, 'BA', '1', 1, NULL, 4),
     (2, 'Cálculo', 6, 'BA', '1', 1, NULL, 4),
@@ -624,7 +624,26 @@ VALUES
 1. Devuelve un listado con el primer apellido, segundo apellido y el nombre de todos los alumnos. El listado deberá estar ordenado alfabéticamente de menor a mayor por el primer apellido, segundo apellido y nombre.
 
    ```sql
+   SELECT a.apellido1, a.apellido2, a.nombre
+   FROM alumno AS a
+   ORDER BY a.apellido1 ASC, a.apellido2 ASC, a.nombre ASC;
    
+   +------------+-----------+----------+
+   | apellido1  | apellido2 | nombre   |
+   +------------+-----------+----------+
+   | Domínguez  | Guerrero  | Antonio  |
+   | Gea        | Ruiz      | Sonia    |
+   | Gutiérrez  | López     | Juan     |
+   | Heller     | Pagac     | Pedro    |
+   | Herman     | Pacocha   | Daniel   |
+   | Hernández  | Martínez  | Irene    |
+   | Herzog     | Tremblay  | Ramón    |
+   | Koss       | Bayer     | José     |
+   | Lakin      | Yundt     | Inma     |
+   | Saez       | Vega      | Juan     |
+   | Sánchez    | Pérez     | Salvador |
+   | Strosin    | Turcotte  | Ismael   |
+   +------------+-----------+----------+
    ```
 
    
@@ -632,7 +651,14 @@ VALUES
 2. Averigua el nombre y los dos apellidos de los alumnos que no han dado de alta su número de teléfono en la base de datos.
 
    ```sql
+   SELECT a.nombre, a.apellido1, a.apellido2
+   FROM alumno AS a
+   WHERE a.codigo_alumno NOT IN (
+   	SELECT ta.alumno_codigo_alumno
+       FROM telefono_alumno AS ta
+   );
    
+   Empty set (0,00 sec)
    ```
 
    
@@ -640,7 +666,16 @@ VALUES
 3. Devuelve el listado de los alumnos que nacieron en 1999.
 
    ```sql
+   SELECT a.nombre, a.apellido1, a.apellido2, a.fecha_nacimiento
+   FROM alumno AS a
+   WHERE YEAR(a.fecha_nacimiento) = '1999';
    
+   +---------+------------+-----------+------------------+
+   | nombre  | apellido1  | apellido2 | fecha_nacimiento |
+   +---------+------------+-----------+------------------+
+   | Ismael  | Strosin    | Turcotte  | 1999-05-24       |
+   | Antonio | Domínguez  | Guerrero  | 1999-02-11       |
+   +---------+------------+-----------+------------------+
    ```
 
    
@@ -648,7 +683,15 @@ VALUES
 4. Devuelve el listado de profesores que no han dado de alta su número de teléfono en la base de datos y además su nif termina en K.
 
    ```sql
+   SELECT p.nif, p.nombre, p.apellido1, p.apellido2
+   FROM profesor AS p
+   WHERE p.codigo_profesor NOT IN (
+   	SELECT tp.profesor_codigo_profesor
+       FROM telefono_profesor AS tp
+   )
+   	AND p.nif LIKE '%K';
    
+   Empty set (0,00 sec)
    ```
 
    
@@ -656,9 +699,24 @@ VALUES
 5. Devuelve el listado de las asignaturas que se imparten en el primer cuatrimestre, en el tercer curso del grado que tiene el identificador 7.
 
    ```sql
-   
+   SELECT a.nombre_asignatura
+   FROM asignatura AS a
+   WHERE cuatrimestre_asignatura = 1
+   	AND codigo_curso = '3'
+   	AND codigo_grado = 7;
+   	
+   +---------------------------------------------+
+   | nombre_asignatura                           |
+   +---------------------------------------------+
+   | Bases moleculares del desarrollo vegetal    |
+   | Fisiología animal                           |
+   | Metabolismo y biosíntesis de biomoléculas   |
+   | Operaciones de separación                   |
+   | Patología molecular de plantas              |
+   | Técnicas instrumentales básicas             |
+   +---------------------------------------------+
    ```
-
+   
    
 
 ##### Consultas multitabla (Composición interna)
@@ -666,48 +724,182 @@ VALUES
 1. Devuelve un listado con los datos de todas las alumnas que se han matriculado alguna vez en el Grado en Ingeniería Informática (Plan 2015).
 
    ```sql
+   SELECT DISTINCT(a.codigo_alumno), a.nif, a.nombre, a.apellido1, a.apellido2
+   FROM alumno AS a
+   INNER JOIN alumno_se_matricula_asignatura AS am
+   ON am.alumno_codigo_alumno = a.codigo_alumno
+   INNER JOIN asignatura AS ag
+   ON ag.codigo_asignatura = am.asignatura_codigo_asignatura
+   INNER JOIN grado AS g
+   ON g.codigo_grado = ag.codigo_grado
+   WHERE a.codigo_genero = 'MUJ' AND g.nombre_grado = 'Grado en Ingeniería Informática (Plan 2015)';
    
+   Empty set (0,00 sec)
    ```
 
    
 
 2. Devuelve un listado con todas las asignaturas ofertadas en el Grado en Ingeniería Informática (Plan 2015).
 
-  ```sql
-  
-  ```
+   ```sql
+   SELECT a.nombre_asignatura
+   FROM asignatura AS a
+   INNER JOIN grado AS g
+   ON g.codigo_grado = a.codigo_grado
+   WHERE g.nombre_grado = 'Grado en Ingeniería Informática (Plan 2015)';
+   
+   +---------------------------------------------------------------------------+
+   | nombre_asignatura                                                         |
+   +---------------------------------------------------------------------------+
+   | Álgegra lineal y matemática discreta                                      |
+   | Cálculo                                                                   |
+   | Física para informática                                                   |
+   | Introducción a la programación                                            |
+   | Organización y gestión de empresas                                        |
+   | Estadística                                                               |
+   | Estructura y tecnología de computadores                                   |
+   | Fundamentos de electrónica                                                |
+   | Lógica y algorítmica                                                      |
+   | Metodología de la programación                                            |
+   | Arquitectura de Computadores                                              |
+   | Estructura de Datos y Algoritmos I                                        |
+   | Ingeniería del Software                                                   |
+   | Sistemas Inteligentes                                                     |
+   | Sistemas Operativos                                                       |
+   | Bases de Datos                                                            |
+   | Estructura de Datos y Algoritmos II                                       |
+   | Fundamentos de Redes de Computadores                                      |
+   | Planificación y Gestión de Proyectos Informáticos                         |
+   | Programación de Servicios Software                                        |
+   | Desarrollo de interfaces de usuario                                       |
+   | Ingeniería de Requisitos                                                  |
+   | Integración de las Tecnologías de la Información en las Organizaciones    |
+   | Modelado y Diseño del Software 1                                          |
+   | Multiprocesadores                                                         |
+   | Seguridad y cumplimiento normativo                                        |
+   | Sistema de Información para las Organizaciones                            |
+   | Tecnologías web                                                           |
+   | Teoría de códigos y criptografía                                          |
+   | Administración de bases de datos                                          |
+   | Herramientas y Métodos de Ingeniería del Software                         |
+   | Informática industrial y robótica                                         |
+   | Ingeniería de Sistemas de Información                                     |
+   | Modelado y Diseño del Software 2                                          |
+   | Negocio Electrónico                                                       |
+   | Periféricos e interfaces                                                  |
+   | Sistemas de tiempo real                                                   |
+   | Tecnologías de acceso a red                                               |
+   | Tratamiento digital de imágenes                                           |
+   | Administración de redes y sistemas operativos                             |
+   | Almacenes de Datos                                                        |
+   | Fiabilidad y Gestión de Riesgos                                           |
+   | Líneas de Productos Software                                              |
+   | Procesos de Ingeniería del Software 1                                     |
+   | Tecnologías multimedia                                                    |
+   | Análisis y planificación de las TI                                        |
+   | Desarrollo Rápido de Aplicaciones                                         |
+   | Gestión de la Calidad y de la Innovación Tecnológica                      |
+   | Inteligencia del Negocio                                                  |
+   | Procesos de Ingeniería del Software 2                                     |
+   | Seguridad Informática                                                     |
+   +---------------------------------------------------------------------------+
+   ```
 
   
 
 3. Devuelve un listado de los profesores junto con el nombre del departamento al que están vinculados. El listado debe devolver cuatro columnas, primer apellido, segundo apellido, nombre y nombre del departamento. El resultado estará ordenado alfabéticamente de menor a mayor por los apellidos y el nombre.
 
-  ```sql
-  
-  ```
+   ```sql
+   SELECT p.apellido1, p.apellido2, p.nombre, d.nombre_departamento
+   FROM profesor AS p
+   INNER JOIN departamento AS d
+   ON d.codigo_departamento = p.codigo_departamento
+   ORDER BY p.apellido1 ASC, p.apellido2 ASC, p.nombre ASC;
+   
+   +------------+------------+-----------+---------------------+
+   | apellido1  | apellido2  | nombre    | nombre_departamento |
+   +------------+------------+-----------+---------------------+
+   | Domínguez  | Hernández  | María     | Matemáticas         |
+   | Fahey      | Considine  | Antonio   | Economía y Empresa  |
+   | Guerrero   | Martínez   | Juan      | Informática         |
+   | Hamill     | Kozey      | Manolo    | Informática         |
+   | Kohler     | Schoen     | Alejandro | Matemáticas         |
+   | Lemke      | Rutherford | Cristina  | Economía y Empresa  |
+   | Monahan    | Murray     | Micaela   | Agronomía           |
+   | Ramirez    | Gea        | Zoe       | Informática         |
+   | Ruecker    | Upton      | Guillermo | Educación           |
+   | Sánchez    | Ruiz       | Pepe      | Informática         |
+   | Schmidt    | Fisher     | David     | Matemáticas         |
+   | Schowalter | Muller     | Francesca | Química y Física    |
+   | Spencer    | Lakin      | Esther    | Educación           |
+   | Stiedemann | Morissette | Alfredo   | Química y Física    |
+   | Streich    | Hirthe     | Carmen    | Educación           |
+   +------------+------------+-----------+---------------------+
+   ```
 
   
 
 4. Devuelve un listado con el nombre de las asignaturas, año de inicio y año de fin del curso escolar del alumno con nif 26902806M.
 
-  ```sql
-  
-  ```
+   ```sql
+   SELECT a.nombre_asignatura, ce.anio_inicio, ce.anio_fin
+   FROM asignatura AS a
+   INNER JOIN alumno_se_matricula_asignatura AS am
+   ON am.asignatura_codigo_asignatura = a.codigo_asignatura
+   INNER JOIN curso_escolar AS ce
+   ON ce.codigo_curso_escolar = am.codigo_curso_escolar
+   INNER JOIN alumno AS al
+   ON al.codigo_alumno = am.alumno_codigo_alumno
+   WHERE al.nif = '26902806M';
+   
+   +----------------------------------------+-------------+----------+
+   | nombre_asignatura                      | anio_inicio | anio_fin |
+   +----------------------------------------+-------------+----------+
+   | Álgegra lineal y matemática discreta   |        2014 |     2015 |
+   | Cálculo                                |        2014 |     2015 |
+   | Física para informática                |        2014 |     2015 |
+   +----------------------------------------+-------------+----------+
+   ```
 
   
 
 5. Devuelve un listado con el nombre de todos los departamentos que tienen profesores que imparten alguna asignatura en el Grado en Ingeniería Informática (Plan 2015).
 
-  ```sql
-  
-  ```
+   ```sql
+   SELECT DISTINCT(d.nombre_departamento)
+   FROM departamento AS d
+   INNER JOIN profesor AS p
+   ON p.codigo_departamento = d.codigo_departamento
+   INNER JOIN asignatura AS a
+   ON a.codigo_profesor = p.codigo_profesor
+   INNER JOIN grado AS g
+   ON g.codigo_grado = a.codigo_grado
+   WHERE g.nombre_grado = 'Grado en Ingeniería Informática (Plan 2015)';
+   
+   +---------------------+
+   | nombre_departamento |
+   +---------------------+
+   | Informática         |
+   +---------------------+
+   ```
 
   
 
 6. Devuelve un listado con todos los alumnos que se han matriculado en alguna asignatura durante el curso escolar 2018/2019.
 
-  ```sql
-  
-  ```
+   ```sql
+   SELECT a.nombre, a.apellido1, a.apellido2, ce.anio_inicio, ce.anio_fin
+   FROM alumno AS a
+   INNER JOIN alumno_se_matricula_asignatura AS am
+   ON am.asignatura_codigo_asignatura = a.codigo_alumno
+   INNER JOIN curso_escolar AS ce
+   ON ce.codigo_curso_escolar = am.codigo_curso_escolar
+   INNER JOIN asignatura AS ag
+   ON ag.codigo_asignatura = am.asignatura_codigo_asignatura
+   WHERE ce.anio_inicio = '2018' AND ce.anio_fin = '2019';
+   
+   Empty set (0,00 sec)
+   ```
 
   
 
@@ -716,7 +908,31 @@ VALUES
 1. Devuelve un listado con los nombres de todos los profesores y los departamentos que tienen vinculados. El listado también debe mostrar aquellos profesores que no tienen ningún departamento asociado. El listado debe devolver cuatro columnas, nombre del departamento, primer apellido, segundo apellido y nombre del profesor. El resultado estará ordenado alfabéticamente de menor a mayor por el nombre del departamento, apellidos y el nombre.
 
    ```sql
+   SELECT d.nombre_departamento, p.apellido1, p.apellido2, p.nombre
+   FROM profesor AS p
+   LEFT JOIN departamento AS d
+   ON d.codigo_departamento = p.codigo_departamento
+   ORDER BY d.nombre_departamento ASC, p.apellido1 ASC, p.apellido2 ASC, p.nombre ASC;
    
+   +---------------------+------------+------------+-----------+
+   | nombre_departamento | apellido1  | apellido2  | nombre    |
+   +---------------------+------------+------------+-----------+
+   | Agronomía           | Monahan    | Murray     | Micaela   |
+   | Economía y Empresa  | Fahey      | Considine  | Antonio   |
+   | Economía y Empresa  | Lemke      | Rutherford | Cristina  |
+   | Educación           | Ruecker    | Upton      | Guillermo |
+   | Educación           | Spencer    | Lakin      | Esther    |
+   | Educación           | Streich    | Hirthe     | Carmen    |
+   | Informática         | Guerrero   | Martínez   | Juan      |
+   | Informática         | Hamill     | Kozey      | Manolo    |
+   | Informática         | Ramirez    | Gea        | Zoe       |
+   | Informática         | Sánchez    | Ruiz       | Pepe      |
+   | Matemáticas         | Domínguez  | Hernández  | María     |
+   | Matemáticas         | Kohler     | Schoen     | Alejandro |
+   | Matemáticas         | Schmidt    | Fisher     | David     |
+   | Química y Física    | Schowalter | Muller     | Francesca |
+   | Química y Física    | Stiedemann | Morissette | Alfredo   |
+   +---------------------+------------+------------+-----------+
    ```
 
    
@@ -724,7 +940,13 @@ VALUES
 2. Devuelve un listado con los profesores que no están asociados a un departamento.
 
    ```sql
+   SELECT p.nombre, p.apellido1, p.apellido2
+   FROM profesor AS p
+   LEFT JOIN departamento AS d
+   ON d.codigo_departamento = p.codigo_departamento
+   WHERE d.codigo_departamento IS NULL;
    
+   Empty set (0,00 sec)
    ```
 
    
@@ -732,7 +954,19 @@ VALUES
 3. Devuelve un listado con los departamentos que no tienen profesores asociados.
 
    ```sql
+   SELECT d.nombre_departamento
+   FROM departamento AS d
+   LEFT JOIN profesor AS p
+   ON p.codigo_departamento = d.codigo_departamento
+   WHERE p.codigo_departamento IS NULL;
    
+   +-----------------------+
+   | nombre_departamento   |
+   +-----------------------+
+   | Filología             |
+   | Derecho               |
+   | Biología y Geología   |
+   +-----------------------+
    ```
 
    
@@ -740,7 +974,29 @@ VALUES
 4. Devuelve un listado con los profesores que no imparten ninguna asignatura.
 
    ```sql
+   SELECT p.nombre, p.apellido1, p.apellido2
+   FROM profesor AS p
+   LEFT JOIN asignatura AS a
+   ON a.codigo_profesor = p.codigo_profesor
+   WHERE a.codigo_profesor IS NULL;
    
+   +-----------+------------+------------+
+   | nombre    | apellido1  | apellido2  |
+   +-----------+------------+------------+
+   | David     | Schmidt    | Fisher     |
+   | Cristina  | Lemke      | Rutherford |
+   | Esther    | Spencer    | Lakin      |
+   | Carmen    | Streich    | Hirthe     |
+   | Alfredo   | Stiedemann | Morissette |
+   | Alejandro | Kohler     | Schoen     |
+   | Antonio   | Fahey      | Considine  |
+   | Guillermo | Ruecker    | Upton      |
+   | Micaela   | Monahan    | Murray     |
+   | Francesca | Schowalter | Muller     |
+   | Pepe      | Sánchez    | Ruiz       |
+   | Juan      | Guerrero   | Martínez   |
+   | María     | Domínguez  | Hernández  |
+   +-----------+------------+------------+
    ```
 
    
@@ -748,7 +1004,88 @@ VALUES
 5. Devuelve un listado con las asignaturas que no tienen un profesor asignado.
 
    ```sql
+   SELECT a.nombre_asignatura
+   FROM asignatura AS a
+   LEFT JOIN profesor AS p
+   ON p.codigo_profesor = a.codigo_profesor
+   WHERE p.codigo_profesor IS NULL;
    
+   +---------------------------------------------------------------------------+
+   | nombre_asignatura                                                         |
+   +---------------------------------------------------------------------------+
+   | Álgegra lineal y matemática discreta                                      |
+   | Cálculo                                                                   |
+   | Física para informática                                                   |
+   | Introducción a la programación                                            |
+   | Organización y gestión de empresas                                        |
+   | Estadística                                                               |
+   | Estructura y tecnología de computadores                                   |
+   | Fundamentos de electrónica                                                |
+   | Lógica y algorítmica                                                      |
+   | Metodología de la programación                                            |
+   | Ingeniería de Requisitos                                                  |
+   | Integración de las Tecnologías de la Información en las Organizaciones    |
+   | Modelado y Diseño del Software 1                                          |
+   | Multiprocesadores                                                         |
+   | Seguridad y cumplimiento normativo                                        |
+   | Sistema de Información para las Organizaciones                            |
+   | Tecnologías web                                                           |
+   | Teoría de códigos y criptografía                                          |
+   | Administración de bases de datos                                          |
+   | Herramientas y Métodos de Ingeniería del Software                         |
+   | Informática industrial y robótica                                         |
+   | Ingeniería de Sistemas de Información                                     |
+   | Modelado y Diseño del Software 2                                          |
+   | Negocio Electrónico                                                       |
+   | Periféricos e interfaces                                                  |
+   | Sistemas de tiempo real                                                   |
+   | Tecnologías de acceso a red                                               |
+   | Tratamiento digital de imágenes                                           |
+   | Administración de redes y sistemas operativos                             |
+   | Almacenes de Datos                                                        |
+   | Fiabilidad y Gestión de Riesgos                                           |
+   | Líneas de Productos Software                                              |
+   | Procesos de Ingeniería del Software 1                                     |
+   | Tecnologías multimedia                                                    |
+   | Análisis y planificación de las TI                                        |
+   | Desarrollo Rápido de Aplicaciones                                         |
+   | Gestión de la Calidad y de la Innovación Tecnológica                      |
+   | Inteligencia del Negocio                                                  |
+   | Procesos de Ingeniería del Software 2                                     |
+   | Seguridad Informática                                                     |
+   | Biologia celular                                                          |
+   | Física                                                                    |
+   | Matemáticas I                                                             |
+   | Química general                                                           |
+   | Química orgánica                                                          |
+   | Biología vegetal y animal                                                 |
+   | Bioquímica                                                                |
+   | Genética                                                                  |
+   | Matemáticas II                                                            |
+   | Microbiología                                                             |
+   | Botánica agrícola                                                         |
+   | Fisiología vegetal                                                        |
+   | Genética molecular                                                        |
+   | Ingeniería bioquímica                                                     |
+   | Termodinámica y cinética química aplicada                                 |
+   | Biorreactores                                                             |
+   | Biotecnología microbiana                                                  |
+   | Ingeniería genética                                                       |
+   | Inmunología                                                               |
+   | Virología                                                                 |
+   | Bases moleculares del desarrollo vegetal                                  |
+   | Fisiología animal                                                         |
+   | Metabolismo y biosíntesis de biomoléculas                                 |
+   | Operaciones de separación                                                 |
+   | Patología molecular de plantas                                            |
+   | Técnicas instrumentales básicas                                           |
+   | Bioinformática                                                            |
+   | Biotecnología de los productos hortofrutículas                            |
+   | Biotecnología vegetal                                                     |
+   | Genómica y proteómica                                                     |
+   | Procesos biotecnológicos                                                  |
+   | Técnicas instrumentales avanzadas                                         |
+   +---------------------------------------------------------------------------+
    ```
 
    
@@ -756,7 +1093,7 @@ VALUES
 6. Devuelve un listado con todos los departamentos que tienen alguna asignatura que no se haya impartido en ningún curso escolar. El resultado debe mostrar el nombre del departamento y el nombre de la asignatura que no se haya impartido nunca.
 
    ```sql
-   
+   /* RESIGNACIÓN */
    ```
 
    
@@ -767,7 +1104,15 @@ VALUES
 1. Devuelve el número total de alumnas que hay.
 
    ```sql
+   SELECT COUNT(a.codigo_alumno) AS numero_alumnas
+   FROM alumno AS a
+   WHERE a.codigo_genero = 'MUJ';
    
+   +----------------+
+   | numero_alumnas |
+   +----------------+
+   |              3 |
+   +----------------+
    ```
 
    
@@ -775,7 +1120,15 @@ VALUES
 2. Calcula cuántos alumnos nacieron en 1999.
 
    ```sql
+   SELECT COUNT(a.codigo_alumno) AS alumnos_99
+   FROM alumno AS a
+   WHERE YEAR(a.fecha_nacimiento) = '1999';
    
+   +------------+
+   | alumnos_99 |
+   +------------+
+   |          2 |
+   +------------+
    ```
 
    
@@ -783,7 +1136,23 @@ VALUES
 3. Calcula cuántos profesores hay en cada departamento. El resultado sólo debe mostrar dos columnas, una con el nombre del departamento y otra con el número de profesores que hay en ese departamento. El resultado sólo debe incluir los departamentos que tienen profesores asociados y deberá estar ordenado de mayor a menor por el número de profesores.
 
    ```sql
+   SELECT d.nombre_departamento, COUNT(p.codigo_profesor) AS numero_profesores
+   FROM profesor AS p
+   INNER JOIN departamento AS d
+   ON d.codigo_departamento = p.codigo_departamento
+   GROUP BY d.nombre_departamento
+   ORDER BY COUNT(p.codigo_profesor) DESC;
    
+   +---------------------+-------------------+
+   | nombre_departamento | numero_profesores |
+   +---------------------+-------------------+
+   | Informática         |                 4 |
+   | Matemáticas         |                 3 |
+   | Educación           |                 3 |
+   | Economía y Empresa  |                 2 |
+   | Química y Física    |                 2 |
+   | Agronomía           |                 1 |
+   +---------------------+-------------------+
    ```
 
    
@@ -791,7 +1160,26 @@ VALUES
 4. Devuelve un listado con todos los departamentos y el número de profesores que hay en cada uno de ellos. Tenga en cuenta que pueden existir departamentos que no tienen profesores asociados. Estos departamentos también tienen que aparecer en el listado.
 
    ```sql
+   SELECT d.nombre_departamento, COUNT(p.codigo_profesor) AS numero_profesores
+   FROM departamento AS d
+   LEFT JOIN profesor AS p
+   ON p.codigo_departamento = d.codigo_departamento
+   GROUP BY d.nombre_departamento
+   ORDER BY COUNT(p.codigo_profesor) DESC;
    
+   +-----------------------+-------------------+
+   | nombre_departamento   | numero_profesores |
+   +-----------------------+-------------------+
+   | Informática           |                 4 |
+   | Matemáticas           |                 3 |
+   | Educación             |                 3 |
+   | Economía y Empresa    |                 2 |
+   | Química y Física      |                 2 |
+   | Agronomía             |                 1 |
+   | Filología             |                 0 |
+   | Derecho               |                 0 |
+   | Biología y Geología   |                 0 |
+   +-----------------------+-------------------+
    ```
 
    
@@ -799,7 +1187,27 @@ VALUES
 5. Devuelve un listado con el nombre de todos los grados existentes en la base de datos y el número de asignaturas que tiene cada uno. Tenga en cuenta que pueden existir grados que no tienen asignaturas asociadas. Estos grados también tienen que aparecer en el listado. El resultado deberá estar ordenado de mayor a menor por el número de asignaturas.
 
    ```sql
+   SELECT g.nombre_grado, COUNT(a.codigo_asignatura) AS numero_asignaturas
+   FROM grado AS g
+   LEFT JOIN asignatura AS a
+   ON a.codigo_grado = g.codigo_grado
+   GROUP BY g.nombre_grado
+   ORDER BY COUNT(a.codigo_asignatura) DESC;
    
+   +----------------------------------------------------------+--------------------+
+   | nombre_grado                                             | numero_asignaturas |
+   +----------------------------------------------------------+--------------------+
+   | Grado en Ingeniería Informática (Plan 2015)              |                 51 |
+   | Grado en Biotecnología (Plan 2015)                       |                 32 |
+   | Grado en Ingeniería Agrícola (Plan 2015)                 |                  0 |
+   | Grado en Ingeniería Eléctrica (Plan 2014)                |                  0 |
+   | Grado en Ingeniería Electrónica Industrial (Plan 2010)   |                  0 |
+   | Grado en Ingeniería Mecánica (Plan 2010)                 |                  0 |
+   | Grado en Ingeniería Química Industrial (Plan 2010)       |                  0 |
+   | Grado en Ciencias Ambientales (Plan 2009)                |                  0 |
+   | Grado en Matemáticas (Plan 2010)                         |                  0 |
+   | Grado en Química (Plan 2009)                             |                  0 |
+   +----------------------------------------------------------+--------------------+
    ```
 
    
@@ -807,7 +1215,19 @@ VALUES
 6. Devuelve un listado con el nombre de todos los grados existentes en la base de datos y el número de asignaturas que tiene cada uno, de los grados que tengan más de 40 asignaturas asociadas.
 
    ```sql
+   SELECT g.nombre_grado, COUNT(a.codigo_asignatura) AS numero_asignaturas
+   FROM grado AS g
+   LEFT JOIN asignatura AS a
+   ON a.codigo_grado = g.codigo_grado
+   GROUP BY g.nombre_grado
+   HAVING COUNT(a.codigo_asignatura) > 40
+   ORDER BY COUNT(a.codigo_asignatura) DESC;
    
+   +-----------------------------------------------+--------------------+
+   | nombre_grado                                  | numero_asignaturas |
+   +-----------------------------------------------+--------------------+
+   | Grado en Ingeniería Informática (Plan 2015)   |                 51 |
+   +-----------------------------------------------+--------------------+
    ```
 
    
@@ -815,7 +1235,24 @@ VALUES
 7. Devuelve un listado que muestre el nombre de los grados y la suma del número total de créditos que hay para cada tipo de asignatura. El resultado debe tener tres columnas: nombre del grado, tipo de asignatura y la suma de los créditos de todas las asignaturas que hay de ese tipo. Ordene el resultado de mayor a menor por el número total de crédidos.
 
    ```sql
+   SELECT g.nombre_grado, ta.nombre_tipo_asignatura, SUM(a.creditos_asignatura) AS numero_creditos
+   FROM grado AS g
+   INNER JOIN asignatura AS a
+   ON a.codigo_grado = g.codigo_grado
+   INNER JOIN tipo_asignatura AS ta
+   ON ta.codigo_tipo_asignatura = a.codigo_tipo_asignatura
+   GROUP BY g.nombre_grado, ta.nombre_tipo_asignatura
+   ORDER BY numero_creditos DESC;
    
+   +-----------------------------------------------+------------------------+-----------------+
+   | nombre_grado                                  | nombre_tipo_asignatura | numero_creditos |
+   +-----------------------------------------------+------------------------+-----------------+
+   | Grado en Ingeniería Informática (Plan 2015)   | Optativa               |             180 |
+   | Grado en Biotecnología (Plan 2015)            | Obligatoria            |             120 |
+   | Grado en Ingeniería Informática (Plan 2015)   | Básica                 |              72 |
+   | Grado en Biotecnología (Plan 2015)            | Básica                 |              60 |
+   | Grado en Ingeniería Informática (Plan 2015)   | Obligatoria            |              54 |
+   +-----------------------------------------------+------------------------+-----------------+
    ```
 
    
@@ -823,7 +1260,22 @@ VALUES
 8. Devuelve un listado que muestre cuántos alumnos se han matriculado de alguna asignatura en cada uno de los cursos escolares. El resultado deberá mostrar dos columnas, una columna con el año de inicio del curso escolar y otra con el número de alumnos matriculados.
 
    ```sql
+   SELECT ce.anio_inicio, COUNT(a.codigo_alumno) AS numero_alumnos
+   FROM alumno AS a
+   INNER JOIN alumno_se_matricula_asignatura AS am
+   ON am.alumno_codigo_alumno = a.codigo_alumno
+   INNER JOIN curso_escolar AS ce
+   ON ce.codigo_curso_escolar = am.codigo_curso_escolar
+   GROUP BY ce.anio_inicio;
    
+   +-------------+----------------+
+   | anio_inicio | numero_alumnos |
+   +-------------+----------------+
+   |        2014 |             16 |
+   |        2015 |             13 |
+   |        2016 |              3 |
+   |        2017 |              3 |
+   +-------------+----------------+
    ```
 
    
@@ -831,9 +1283,34 @@ VALUES
 9. Devuelve un listado con el número de asignaturas que imparte cada profesor. El listado debe tener en cuenta aquellos profesores que no imparten ninguna asignatura. El resultado mostrará cinco columnas: id, nombre, primer apellido, segundo apellido y número de asignaturas. El resultado estará ordenado de mayor a menor por el número de asignaturas.
 
    ```sql
+   SELECT p.codigo_profesor, p.nombre, p.apellido1, p.apellido2, COUNT(a.codigo_asignatura) AS numero_asignaturas
+   FROM profesor AS p
+   LEFT JOIN asignatura AS a
+   ON a.codigo_profesor = p.codigo_profesor
+   GROUP BY p.codigo_profesor, p.nombre, p.apellido1, p.apellido2
+   ORDER BY numero_asignaturas DESC;
    
+   +-----------------+-----------+------------+------------+--------------------+
+   | codigo_profesor | nombre    | apellido1  | apellido2  | numero_asignaturas |
+   +-----------------+-----------+------------+------------+--------------------+
+   |              14 | Manolo    | Hamill     | Kozey      |                  6 |
+   |               3 | Zoe       | Ramirez    | Gea        |                  5 |
+   |               5 | David     | Schmidt    | Fisher     |                  0 |
+   |               8 | Cristina  | Lemke      | Rutherford |                  0 |
+   |              10 | Esther    | Spencer    | Lakin      |                  0 |
+   |              12 | Carmen    | Streich    | Hirthe     |                  0 |
+   |              13 | Alfredo   | Stiedemann | Morissette |                  0 |
+   |              15 | Alejandro | Kohler     | Schoen     |                  0 |
+   |              16 | Antonio   | Fahey      | Considine  |                  0 |
+   |              17 | Guillermo | Ruecker    | Upton      |                  0 |
+   |              18 | Micaela   | Monahan    | Murray     |                  0 |
+   |              20 | Francesca | Schowalter | Muller     |                  0 |
+   |              21 | Pepe      | Sánchez    | Ruiz       |                  0 |
+   |              22 | Juan      | Guerrero   | Martínez   |                  0 |
+   |              23 | María     | Domínguez  | Hernández  |                  0 |
+   +-----------------+-----------+------------+------------+--------------------+
    ```
-
+   
    
 
 
@@ -842,7 +1319,18 @@ VALUES
 1. Devuelve todos los datos del alumno más joven.
 
    ```sql
+   SELECT a.codigo_alumno, a.nif, a.nombre, a.apellido1, a.apellido2, a.fecha_nacimiento, a.codigo_genero
+   FROM alumno AS a
+   WHERE a.fecha_nacimiento = (
+   	SELECT MAX(a.fecha_nacimiento)
+       FROM alumno AS a
+   );
    
+   +---------------+-----------+--------+-----------+-----------+------------------+---------------+
+   | codigo_alumno | nif       | nombre | apellido1 | apellido2 | fecha_nacimiento | codigo_genero |
+   +---------------+-----------+--------+-----------+-----------+------------------+---------------+
+   |             4 | 17105885A | Pedro  | Heller    | Pagac     | 2000-10-05       | HOM           |
+   +---------------+-----------+--------+-----------+-----------+------------------+---------------+
    ```
 
    
@@ -850,7 +1338,14 @@ VALUES
 2. Devuelve un listado con los profesores que no están asociados a un departamento.
 
    ```sql
+   SELECT p.nombre, p.apellido1, p.apellido2
+   FROM profesor AS p
+   WHERE p.codigo_departamento NOT IN (
+   	SELECT d.codigo_departamento
+       FROM departamento AS d
+   );
    
+   Empty set (0,00 sec)
    ```
 
    
@@ -858,7 +1353,20 @@ VALUES
 3. Devuelve un listado con los departamentos que no tienen profesores asociados.
 
    ```sql
+   SELECT d.nombre_departamento
+   FROM departamento AS d
+   WHERE d.codigo_departamento NOT IN (
+   	SELECT p.codigo_departamento
+       FROM profesor AS p
+   );
    
+   +-----------------------+
+   | nombre_departamento   |
+   +-----------------------+
+   | Filología             |
+   | Derecho               |
+   | Biología y Geología   |
+   +-----------------------+
    ```
 
    
@@ -866,7 +1374,18 @@ VALUES
 4. Devuelve un listado con los profesores que tienen un departamento asociado y que no imparten ninguna asignatura.
 
    ```sql
-   
+   SELECT p.nombre, p.apellido1, p.apellido2
+   FROM profesor AS p
+   WHERE p.codigo_departamento IN (
+   	SELECT d.codigo_departamento
+       FROM departamento AS d
+   )
+   	AND p.codigo_profesor NOT IN (
+           SELECT a.codigo_profesor
+           FROM asignatura AS a
+       );
+       
+   Empty set (0,00 sec)
    ```
 
    
@@ -874,7 +1393,7 @@ VALUES
 5. Devuelve un listado con las asignaturas que no tienen un profesor asignado.
 
    ```sql
-   
+   /* RESIGNACIÓN */
    ```
 
    
@@ -882,9 +1401,19 @@ VALUES
 6. Devuelve un listado con todos los departamentos que no han impartido asignaturas en ningún curso escolar.
 
    ```sql
-   
+   /* RESIGNACIÓN */
+   SELECT d.nombre_departamento
+   FROM departamento AS d, profesor AS p, asignatura AS a, alumno_se_matricula_asignatura AS am, curso_escolar AS ce
+   WHERE d.codigo_departamento = p.codigo_departamento
+   	AND p.codigo_profesor = a.codigo_profesor
+   	AND a.codigo_asignatura = am.asignatura_codigo_asignatura
+   	AND am.codigo_curso_escolar = ce.codigo_curso_escolar
+   	AND am.codigo_curso_escolar NOT IN (
+       	SELECT ce.codigo_curso_escolar
+           FROM curso_escolar AS ce
+       );
    ```
-
+   
    
 
 #### Vistas
