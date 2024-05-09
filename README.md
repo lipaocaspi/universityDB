@@ -10,7 +10,6 @@
 -- -----------------------------------------------------
 -- pais
 -- -----------------------------------------------------
-/* 1FN */
 CREATE TABLE pais (
   codigo_pais VARCHAR(10) NOT NULL,
   nombre_pais VARCHAR(50) NOT NULL,
@@ -20,7 +19,6 @@ CREATE TABLE pais (
 -- -----------------------------------------------------
 -- region
 -- -----------------------------------------------------
-/* 1FN */
 CREATE TABLE region (
   codigo_region VARCHAR(10) NOT NULL,
   nombre_region VARCHAR(50) NOT NULL,
@@ -34,7 +32,6 @@ CREATE TABLE region (
 -- -----------------------------------------------------
 -- ciudad
 -- -----------------------------------------------------
-/* 1FN */
 CREATE TABLE ciudad (
   codigo_ciudad VARCHAR(10) NOT NULL,
   nombre_ciudad VARCHAR(50) NOT NULL,
@@ -1093,9 +1090,21 @@ VALUES
 6. Devuelve un listado con todos los departamentos que tienen alguna asignatura que no se haya impartido en ningún curso escolar. El resultado debe mostrar el nombre del departamento y el nombre de la asignatura que no se haya impartido nunca.
 
    ```sql
-   /* RESIGNACIÓN */
+   SELECT d.nombre_departamento, a.nombre_asignatura
+   FROM departamento AS d
+   INNER JOIN profesor AS p
+   ON p.codigo_departamento = d.codigo_departamento
+   INNER JOIN asignatura AS a
+   ON a.codigo_profesor = p.codigo_profesor
+   INNER JOIN alumno_se_matricula_asignatura AS am
+   ON am.asignatura_codigo_asignatura = a.codigo_asignatura
+   LEFT JOIN curso_escolar AS ce
+   ON ce.codigo_curso_escolar = am.codigo_curso_escolar
+   WHERE ce.codigo_curso_escolar IS NULL;
+   
+   Empty set (0,00 sec)
    ```
-
+   
    
 
 
