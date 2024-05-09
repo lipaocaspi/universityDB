@@ -1402,7 +1402,12 @@ VALUES
 5. Devuelve un listado con las asignaturas que no tienen un profesor asignado.
 
    ```sql
-   /* RESIGNACIÓN */
+   /* FALTA SUBCONSULTA */
+   SELECT a.nombre_asignatura
+   FROM asignatura AS a
+   LEFT JOIN profesor AS p
+   ON p.codigo_profesor = a.codigo_profesor
+   WHERE p.codigo_profesor IS NULL;
    ```
 
    
