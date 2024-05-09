@@ -2,6 +2,8 @@
 
 #### Normalización
 
+![](https://raw.githubusercontent.com/lipaocaspi/universityDB/main/DER.png)
+
 #### Creación BD
 
 ```sql
