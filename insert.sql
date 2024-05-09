@@ -133,7 +133,7 @@ VALUES
     (22, '98816696W', 'Juan', 'Guerrero', 'Martínez', '1980/11/21', 'HOM', 1),
     (23, '77194445M', 'María', 'Domínguez', 'Hernández', '1980/12/13', 'MUJ', 2);
 
-INSERT INTO asignatura (codigo_asignatura, nonbre_asignatura, creditos_asignatura, codigo_tipo_asignatura, codigo_curso, cuatrimestre_asignatura, codigo_profesor, codigo_grado)
+INSERT INTO asignatura (codigo_asignatura, nombre_asignatura, creditos_asignatura, codigo_tipo_asignatura, codigo_curso, cuatrimestre_asignatura, codigo_profesor, codigo_grado)
 VALUES 
     (1, 'Álgegra lineal y matemática discreta', 6, 'BA', '1', 1, NULL, 4),
     (2, 'Cálculo', 6, 'BA', '1', 1, NULL, 4),

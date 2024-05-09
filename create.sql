@@ -141,7 +141,7 @@ CREATE TABLE profesor (
 -- -----------------------------------------------------
 CREATE TABLE asignatura (
 	codigo_asignatura INT NOT NULL,
-    nonbre_asignatura VARCHAR(100) NOT NULL,
+    nombre_asignatura VARCHAR(100) NOT NULL,
     creditos_asignatura FLOAT NOT NULL,
     codigo_tipo_asignatura VARCHAR(5) NOT NULL,
     codigo_curso VARCHAR(10) NOT NULL,
