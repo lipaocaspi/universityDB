@@ -518,7 +518,7 @@ VALUES
     (1, 7, 1),
     (1, 8, 1),
     (1, 9, 1),
-    (1, 10, 1),
+    (1, 11, 1),
     (1, 1, 2),
     (1, 2, 2),
     (1, 3, 2),
@@ -1402,12 +1402,90 @@ VALUES
 5. Devuelve un listado con las asignaturas que no tienen un profesor asignado.
 
    ```sql
-   /* FALTA SUBCONSULTA */
    SELECT a.nombre_asignatura
    FROM asignatura AS a
-   LEFT JOIN profesor AS p
-   ON p.codigo_profesor = a.codigo_profesor
-   WHERE p.codigo_profesor IS NULL;
+   WHERE a.codigo_asignatura NOT IN (
+   	SELECT a2.codigo_asignatura
+       FROM asignatura AS a2
+       WHERE a2.codigo_profesor IS NOT NULL
+   );
+   
+   +------------------------------------------------------------------------+
+   | nombre_asignatura                                                      |
+   +------------------------------------------------------------------------+
+   | Álgegra lineal y matemática discreta                                   |
+   | Cálculo                                                                |
+   | Física para informática                                                |
+   | Introducción a la programación                                         |
+   | Organización y gestión de empresas                                     |
+   | Estadística                                                            |
+   | Estructura y tecnología de computadores                                |
+   | Fundamentos de electrónica                                             |
+   | Lógica y algorítmica                                                   |
+   | Metodología de la programación                                         |
+   | Ingeniería de Requisitos                                               |
+   | Integración de las Tecnologías de la Información en las Organizaciones |
+   | Modelado y Diseño del Software 1                                       |
+   | Multiprocesadores                                                      |
+   | Seguridad y cumplimiento normativo                                     |
+   | Sistema de Información para las Organizaciones                         |
+   | Tecnologías web                                                        |
+   | Teoría de códigos y criptografía                                       |
+   | Administración de bases de datos                                       |
+   | Herramientas y Métodos de Ingeniería del Software                      |
+   | Informática industrial y robótica                                      |
+   | Ingeniería de Sistemas de Información                                  |
+   | Modelado y Diseño del Software 2                                       |
+   | Negocio Electrónico                                                    |
+   | Periféricos e interfaces                                               |
+   | Sistemas de tiempo real                                                |
+   | Tecnologías de acceso a red                                            |
+   | Tratamiento digital de imágenes                                        |
+   | Administración de redes y sistemas operativos                          |
+   | Almacenes de Datos                                                     |
+   | Fiabilidad y Gestión de Riesgos                                        |
+   | Líneas de Productos Software                                           |
+   | Procesos de Ingeniería del Software 1                                  |
+   | Tecnologías multimedia                                                 |
+   | Análisis y planificación de las TI                                     |
+   | Desarrollo Rápido de Aplicaciones                                      |
+   | Gestión de la Calidad y de la Innovación Tecnológica                   |
+   | Inteligencia del Negocio                                               |
+   | Procesos de Ingeniería del Software 2                                  |
+   | Seguridad Informática                                                  |
+   | Biologia celular                                                       |
+   | Física                                                                 |
+   | Matemáticas I                                                          |
+   | Química general                                                        |
+   | Química orgánica                                                       |
+   | Biología vegetal y animal                                              |
+   | Bioquímica                                                             |
+   | Genética                                                               |
+   | Matemáticas II                                                         |
+   | Microbiología                                                          |
+   | Botánica agrícola                                                      |
+   | Fisiología vegetal                                                     |
+   | Genética molecular                                                     |
+   | Ingeniería bioquímica                                                  |
+   | Termodinámica y cinética química aplicada                              |
+   | Biorreactores                                                          |
+   | Biotecnología microbiana                                               |
+   | Ingeniería genética                                                    |
+   | Inmunología                                                            |
+   | Virología                                                              |
+   | Bases moleculares del desarrollo vegetal                               |
+   | Fisiología animal                                                      |
+   | Metabolismo y biosíntesis de biomoléculas                              |
+   | Operaciones de separación                                              |
+   | Patología molecular de plantas                                         |
+   | Técnicas instrumentales básicas                                        |
+   | Bioinformática                                                         |
+   | Biotecnología de los productos hortofrutículas                         |
+   | Biotecnología vegetal                                                  |
+   | Genómica y proteómica                                                  |
+   | Procesos biotecnológicos                                               |
+   | Técnicas instrumentales avanzadas                                      |
+   +------------------------------------------------------------------------+
    ```
 
    
@@ -1415,17 +1493,33 @@ VALUES
 6. Devuelve un listado con todos los departamentos que no han impartido asignaturas en ningún curso escolar.
 
    ```sql
-   /* RESIGNACIÓN */
    SELECT d.nombre_departamento
-   FROM departamento AS d, profesor AS p, asignatura AS a, alumno_se_matricula_asignatura AS am, curso_escolar AS ce
-   WHERE d.codigo_departamento = p.codigo_departamento
-   	AND p.codigo_profesor = a.codigo_profesor
-   	AND a.codigo_asignatura = am.asignatura_codigo_asignatura
-   	AND am.codigo_curso_escolar = ce.codigo_curso_escolar
-   	AND am.codigo_curso_escolar NOT IN (
-       	SELECT ce.codigo_curso_escolar
-           FROM curso_escolar AS ce
-       );
+   FROM departamento AS d
+   WHERE d.codigo_departamento NOT IN (
+   	SELECT DISTINCT(d.codigo_departamento)
+       FROM departamento AS d
+       INNER JOIN profesor AS p
+       ON p.codigo_departamento = d.codigo_departamento
+       INNER JOIN asignatura AS a
+       ON a.codigo_profesor = p.codigo_profesor
+       INNER JOIN alumno_se_matricula_asignatura AS am
+       ON am.asignatura_codigo_asignatura = a.codigo_asignatura
+       INNER JOIN curso_escolar AS ce
+       ON ce.codigo_curso_escolar = am.codigo_curso_escolar
+   );
+   
+   +---------------------+
+   | nombre_departamento |
+   +---------------------+
+   | Matemáticas         |
+   | Economía y Empresa  |
+   | Educación           |
+   | Agronomía           |
+   | Química y Física    |
+   | Filología           |
+   | Derecho             |
+   | Biología y Geología |
+   +---------------------+
    ```
    
    
