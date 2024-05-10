@@ -3,7 +3,6 @@ USE uniDB;
 -- -----------------------------------------------------
 -- pais
 -- -----------------------------------------------------
-/* 1FN */
 CREATE TABLE pais (
   codigo_pais VARCHAR(10) NOT NULL,
   nombre_pais VARCHAR(50) NOT NULL,
@@ -13,7 +12,6 @@ CREATE TABLE pais (
 -- -----------------------------------------------------
 -- region
 -- -----------------------------------------------------
-/* 1FN */
 CREATE TABLE region (
   codigo_region VARCHAR(10) NOT NULL,
   nombre_region VARCHAR(50) NOT NULL,
@@ -27,7 +25,6 @@ CREATE TABLE region (
 -- -----------------------------------------------------
 -- ciudad
 -- -----------------------------------------------------
-/* 1FN */
 CREATE TABLE ciudad (
   codigo_ciudad VARCHAR(10) NOT NULL,
   nombre_ciudad VARCHAR(50) NOT NULL,
