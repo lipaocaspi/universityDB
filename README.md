@@ -1526,163 +1526,326 @@ VALUES
 
 #### Vistas
 
-1. A
+1. Crear una vista que devuelva un listado con el primer apellido, segundo apellido y el nombre de todos los alumnos. El listado deberá estar ordenado alfabéticamente de menor a mayor por el primer apellido, segundo apellido y nombre.
 
    ```sql
-   
+   CREATE VIEW alumnos_apellidos_nombre AS
+   SELECT a.apellido1, a.apellido2, a.nombre
+   FROM alumno AS a
+   ORDER BY a.apellido1 ASC, a.apellido2 ASC, a.nombre ASC;
    ```
 
    
 
-2. B
+2. Crear una vista que devuelva un listado de los profesores junto con el nombre del departamento al que están vinculados. El listado debe devolver cuatro columnas, primer apellido, segundo apellido, nombre y nombre del departamento. El resultado estará ordenado alfabéticamente de menor a mayor por los apellidos y el nombre.
 
    ```sql
-   
+   CREATE VIEW profesores_departamentos AS
+   SELECT p.apellido1, p.apellido2, p.nombre, d.nombre_departamento
+   FROM profesor AS p
+   INNER JOIN departamento AS d
+   ON d.codigo_departamento = p.codigo_departamento
+   ORDER BY p.apellido1 ASC, p.apellido2 ASC, p.nombre ASC;
    ```
 
    
 
-3. C
+3. Crear una vista que devuelva un listado con los profesores que no imparten ninguna asignatura.
 
    ```sql
-   
+   CREATE VIEW profesores_sin_asignatura AS
+   SELECT p.nombre, p.apellido1, p.apellido2
+   FROM profesor AS p
+   LEFT JOIN asignatura AS a
+   ON a.codigo_profesor = p.codigo_profesor
+   WHERE a.codigo_profesor IS NULL;
    ```
 
    
 
-4. D
+4. Crear una vista que devuelva un listado con las asignaturas que no tienen un profesor asignado.
 
    ```sql
-   
+   CREATE VIEW asignaturas_sin_profesor AS
+   SELECT a.nombre_asignatura
+   FROM asignatura AS a
+   LEFT JOIN profesor AS p
+   ON p.codigo_profesor = a.codigo_profesor
+   WHERE p.codigo_profesor IS NULL;
    ```
 
    
 
-5. E
+5. Crear una vista que calcule cuántos profesores hay en cada departamento. El resultado sólo debe mostrar dos columnas, una con el nombre del departamento y otra con el número de profesores que hay en ese departamento. El resultado sólo debe incluir los departamentos que tienen profesores asociados y deberá estar ordenado de mayor a menor por el número de profesores.
 
    ```sql
-   
+   CREATE VIEW numero_profesores_departamento AS
+   SELECT d.nombre_departamento, COUNT(p.codigo_profesor) AS numero_profesores
+   FROM profesor AS p
+   INNER JOIN departamento AS d
+   ON d.codigo_departamento = p.codigo_departamento
+   GROUP BY d.nombre_departamento
+   ORDER BY COUNT(p.codigo_profesor) DESC;
    ```
 
    
 
-6. F
+6. Crear una vista que devuelva un listado con el nombre de todos los grados existentes en la base de datos y el número de asignaturas que tiene cada uno. Tenga en cuenta que pueden existir grados que no tienen asignaturas asociadas. Estos grados también tienen que aparecer en el listado. El resultado deberá estar ordenado de mayor a menor por el número de asignaturas.
 
    ```sql
-   
+   CREATE VIEW numero_asignaturas_grado AS
+   SELECT g.nombre_grado, COUNT(a.codigo_asignatura) AS numero_asignaturas
+   FROM grado AS g
+   LEFT JOIN asignatura AS a
+   ON a.codigo_grado = g.codigo_grado
+   GROUP BY g.nombre_grado
+   ORDER BY COUNT(a.codigo_asignatura) DESC;
    ```
 
    
 
-7. G
+7. Crear una vista que devuelva un listado con el número de asignaturas que imparte cada profesor. El listado debe tener en cuenta aquellos profesores que no imparten ninguna asignatura. El resultado mostrará cinco columnas: id, nombre, primer apellido, segundo apellido y número de asignaturas. El resultado estará ordenado de mayor a menor por el número de asignaturas.
 
    ```sql
-   
+   CREATE VIEW numero_asignaturas_profesor AS
+   SELECT p.codigo_profesor, p.nombre, p.apellido1, p.apellido2, COUNT(a.codigo_asignatura) AS numero_asignaturas
+   FROM profesor AS p
+   LEFT JOIN asignatura AS a
+   ON a.codigo_profesor = p.codigo_profesor
+   GROUP BY p.codigo_profesor, p.nombre, p.apellido1, p.apellido2
+   ORDER BY numero_asignaturas DESC;
    ```
 
    
 
-8. H
+8. Crear una vista que devuelva un listado con los nombres de todos los profesores y los departamentos que tienen vinculados. El listado también debe mostrar aquellos profesores que no tienen ningún departamento asociado. El listado debe devolver cuatro columnas, nombre del departamento, primer apellido, segundo apellido y nombre del profesor. El resultado estará ordenado alfabéticamente de menor a mayor por el nombre del departamento, apellidos y el nombre.
 
    ```sql
-   
+   CREATE VIEW profesores_departamentos AS
+   SELECT d.nombre_departamento, p.apellido1, p.apellido2, p.nombre
+   FROM profesor AS p
+   LEFT JOIN departamento AS d
+   ON d.codigo_departamento = p.codigo_departamento
+   ORDER BY d.nombre_departamento ASC, p.apellido1 ASC, p.apellido2 ASC, p.nombre ASC;
    ```
 
    
 
-9. I
+9. Crear una vista que devuelva un listado con los departamentos que no tienen profesores asociados.
 
    ```sql
-   
+   CREATE VIEW departamentos_sin_profesor AS
+   SELECT d.nombre_departamento
+   FROM departamento AS d
+   LEFT JOIN profesor AS p
+   ON p.codigo_departamento = d.codigo_departamento
+   WHERE p.codigo_departamento IS NULL;
    ```
 
    
 
-10. J
+10. Crear una vista que devuelva un listado con todos los departamentos y el número de profesores que hay en cada uno de ellos. Tenga en cuenta que pueden existir departamentos que no tienen profesores asociados. Estos departamentos también tienen que aparecer en el listado.
 
     ```sql
-    
+    CREATE VIEW numero_profesores_departamentos AS
+    SELECT d.nombre_departamento, COUNT(p.codigo_profesor) AS numero_profesores
+    FROM departamento AS d
+    LEFT JOIN profesor AS p
+    ON p.codigo_departamento = d.codigo_departamento
+    GROUP BY d.nombre_departamento
+    ORDER BY COUNT(p.codigo_profesor) DESC;
     ```
-
+    
     
 
 #### Procedimientos almacenados
 
-1. A
+1. Devolver el listado de los alumnos que nacieron en 1999.
 
    ```sql
+   DELIMITER $$
+   CREATE PROCEDURE alumnos_por_año(
+   	IN año VARCHAR(4)
+   )
+   BEGIN
+   	SELECT a.nombre, a.apellido1, a.apellido2, a.fecha_nacimiento
+       FROM alumno AS a
+       WHERE YEAR(a.fecha_nacimiento) = año;
+   END $$
+   DELIMITER ;
    
+   CALL alumnos_por_año('1999');
    ```
 
    
 
-2. B
+2. Insertar datos a la tabla departamento.
 
    ```sql
-   
+   DELIMITER $$
+   CREATE PROCEDURE insert_departamento(
+   	IN codigo_departamento INT,
+       IN nombre_departamento VARCHAR(50)
+   )
+   BEGIN
+   	INSERT INTO departamento
+   	VALUES (codigo_departamento, nombre_departamento);
+   END $$
+   DELIMITER ;
    ```
 
    
 
-3. C
+3. Devolver el listado de las asignaturas que se imparten en el primer cuatrimestre, en el tercer curso del grado que tiene el identificador 7.
 
    ```sql
+   DELIMITER $$
+   CREATE PROCEDURE lista_asignaturas(
+   	IN cuatrimestre TINYINT(3),
+       IN curso VARCHAR(10),
+       IN grado INT
+   )
+   BEGIN
+       SELECT a.nombre_asignatura
+       FROM asignatura AS a
+       WHERE cuatrimestre_asignatura = cuatrimestre
+           AND codigo_curso = curso
+           AND codigo_grado = grado;
+   END $$
+   DELIMITER ;
    
+   CALL lista_asignaturas(1, '3', 7);
    ```
 
    
 
-4. D
+4. Insertar datos a la tabla genero.
 
    ```sql
-   
+   DELIMITER $$
+   CREATE PROCEDURE insert_genero(
+   	IN codigo_genero VARCHAR(3),
+       IN nombre_genero VARCHAR(20)
+   )
+   BEGIN
+   	INSERT INTO genero
+   	VALUES (codigo_genero, nombre_genero);
+   END $$
+   DELIMITER ;
    ```
 
    
 
-5. E
+5. Devolver un listado con el nombre de las asignaturas, año de inicio y año de fin del curso escolar del alumno con nif 26902806M.
 
    ```sql
+   DELIMITER $$
+   CREATE PROCEDURE asignaturas_año_curso(
+   	IN nif_alumno VARCHAR(9)
+   )
+   BEGIN
+       SELECT a.nombre_asignatura, ce.anio_inicio, ce.anio_fin
+       FROM asignatura AS a
+       INNER JOIN alumno_se_matricula_asignatura AS am
+       ON am.asignatura_codigo_asignatura = a.codigo_asignatura
+       INNER JOIN curso_escolar AS ce
+       ON ce.codigo_curso_escolar = am.codigo_curso_escolar
+       INNER JOIN alumno AS al
+       ON al.codigo_alumno = am.alumno_codigo_alumno
+       WHERE al.nif = nif_alumno;
+   END $$
+   DELIMITER ;
    
+   CALL asignaturas_año_curso('26902806M');
    ```
 
    
 
-6. F
+6. Insertar datos a la tabla grado.
 
    ```sql
-   
+   DELIMITER $$
+   CREATE PROCEDURE insert_grado(
+   	IN codigo_grado INT,
+       IN nombre_grado VARCHAR(100)
+   )
+   BEGIN
+   	INSERT INTO grado
+   	VALUES (codigo_grado, nombre_grado);
+   END $$
+   DELIMITER ;
    ```
 
    
 
-7. G
+7. Devolver un listado con todas las asignaturas ofertadas en el Grado en Ingeniería Informática (Plan 2015).
 
    ```sql
+   DELIMITER $$
+   CREATE PROCEDURE asignaturas_grado(
+   	IN grado VARCHAR(100)
+   )
+   BEGIN
+       SELECT a.nombre_asignatura
+       FROM asignatura AS a
+       INNER JOIN grado AS g
+       ON g.codigo_grado = a.codigo_grado
+       WHERE g.nombre_grado = grado;
+   END $$
+   DELIMITER ;
    
+   CALL asignaturas_grado('Grado en Ingeniería Informática (Plan 2015)');
    ```
 
    
 
-8. H
+8. Insertar datos a la tabla curso.
 
    ```sql
-   
+   DELIMITER $$
+   CREATE PROCEDURE insert_curso(
+   	IN codigo_curso VARCHAR(10),
+       IN nombre_curso VARCHAR(50)
+   )
+   BEGIN
+   	INSERT INTO curso
+   	VALUES (codigo_curso, nombre_curso);
+   END $$
+   DELIMITER ;
    ```
 
    
 
-9. I
+9. Insertar datos a la tabla tipo_asignatura.
 
    ```sql
-   
+   DELIMITER $$
+   CREATE PROCEDURE insert_tipo_asignatura(
+   	IN codigo_tipo_asignatura VARCHAR(5),
+       IN nombre_tipo_asignatura VARCHAR(50)
+   )
+   BEGIN
+   	INSERT INTO tipo_asignatura
+   	VALUES (codigo_tipo_asignatura, nombre_tipo_asignatura);
+   END $$
+   DELIMITER ;
    ```
 
    
 
-10. J
+10. Insertar datos a la tabla alumno_se_matricula_asignatura.
 
     ```sql
-    
+    DELIMITER $$
+    CREATE PROCEDURE insert_alumno_se_matricula_asignatura(
+    	IN alumno_codigo_alumno INT,
+        IN asignatura_codigo_asignatura INT,
+        IN codigo_curso_escolar INT
+    )
+    BEGIN
+    	INSERT INTO alumno_se_matricula_asignatura
+    	VALUES (alumno_codigo_alumno, asignatura_codigo_asignatura, codigo_curso_escolar);
+    END $$
+    DELIMITER ;
     ```
 
